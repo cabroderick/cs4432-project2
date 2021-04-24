@@ -2,6 +2,7 @@ import java.util.Scanner;
 import java.util.Hashtable;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Important notes:
@@ -19,7 +20,8 @@ public class App {
      // the table to store the RandomV values for each record in the dataset directory
     // format will be F-O where F is the file # (1-99) and O is the offset # (0-3960)
 
-    static Hashtable<Integer, String> table = new Hashtable<>();
+    static Hashtable<Integer, String> tableIndex = new Hashtable<>();
+    static ArrayList<String>[] arrayIndex = new ArrayList[5000];
 
     public static void main(String[] args) throws Exception {
         getInput();
@@ -30,13 +32,14 @@ public class App {
         Scanner scanner = new Scanner(System.in);
         String command = scanner.nextLine();
         if (command.equals("CREATE INDEX ON Project2Dataset (RandomV)")) {
-            initTable();
+            initIndexes();
+            System.out.println("The hash-based and array-based indexes are built successfully.");
         }
         getInput();
     }
 
     // initializes the hash table
-    private static void initTable () {
+    private static void initIndexes() {
         try {
             for (int F = 1; F <= 99; F++) { // iterate through each file in the dataset directory
                 String fileName = System.getProperty("user.dir")+"/Project2Dataset/F"+F+".txt";
@@ -51,8 +54,14 @@ public class App {
                     int O = R*40; // the offset #, record # * 40 since each record is of size 40 bytes
                     String v = Integer.toString(F)+"-"+Integer.toString(O);
                     // now add values to hashtable
-                    table.put(k, v);
-                    System.out.println(table);
+                    tableIndex.put(k, v);
+                    if (arrayIndex[k] == null) { // if the entry in the array is null, then initialize the array list. otherwise, just add to the list.
+                        arrayIndex[k] = new ArrayList<String>();
+                    }
+                    arrayIndex[k].add(v);
+                    System.out.println(arrayIndex[k]);
+                    System.out.println(tableIndex);
+                    System.out.println(arrayIndex);
                 }
                 scanner.close();
             }
