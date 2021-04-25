@@ -1,6 +1,7 @@
 import java.util.Scanner;
 import java.util.Hashtable;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -36,7 +37,7 @@ public class App {
             initIndexes();
             System.out.println("The hash-based and array-based indexes are built successfully.");
         } else
-        if (command.substring(0, 46).equals("403")) {
+        if (command.substring(0, 46).equals("SELECT * FROM Project2Dataset WHERE RandomV = ")) {
             int v = Integer.parseInt(command.substring(46, command.length()));
             lookup(v);
         }
@@ -48,7 +49,7 @@ public class App {
     private static void initIndexes() {
         try {
             for (int F = 1; F <= 99; F++) { // iterate through each file in the dataset directory
-                String fileName = System.getProperty("user.dir")+"/Project2Dataset/F"+F+".txt";
+                String fileName = getFileName(F);
                 File file = new File(fileName);
                 Scanner scanner = new Scanner(file);
                 String data = scanner.nextLine();
@@ -78,17 +79,90 @@ public class App {
     // gets a value from the table
     private static void lookup (int v) {
         if (indexed) { // lookup from the index table
-            double time;
+            long start = System.currentTimeMillis();
+
             String val = tableIndex.get(v);
-            System.out.println("Record matching query: "+val);
+
+            long end = System.currentTimeMillis();
+
+            long timeElapsed = end - start;
+
+            String[] vals = val.split("-");
+            int F = Integer.parseInt(vals[0]);
+            int O = Integer.parseInt(vals[1]);
+
+            String queryVal = getRecord(F, O);
+
+            System.out.println("Record matching query: "+queryVal);
             System.out.println("Index type used: hashtable");
-            System.out.println("Time taken to answer query: ");
+            System.out.println("Time taken to answer query: "+timeElapsed+" ms");
+            System.out.println("Data files read: 1");
+        } else { // look through every entry in the table
+            String queryVal = "";
+            int filesRead = 0; // the number of files accessed
+            long start = System.currentTimeMillis();
+            long timeElapsed = 0;
+            for (int F = 1; F <= 99; F++) {
+                filesRead++;
+                for (int O = 0; O < 4000; O+=40) {
+                    int randomV = getRandomV(F, O);
+                    if (randomV == v) {
+                        queryVal = getRecord(F, O);
+                        long end = System.currentTimeMillis();
+                        timeElapsed = end - start;
+                        F = 100;
+                        break;
+                    }
+                }
+            }
+
+            System.out.println("Record matching query: "+queryVal);
+            System.out.println("Table scan used");
+            System.out.println("Time taken to answer query: "+timeElapsed+" ms");
+            System.out.println("Data files read: "+filesRead);
         }
         
     }
 
-    // returns a record where F is the file number and O is the offset in the file (in bytesP)
-    private String getRecord (int F, int O) {
+    private static String getFileName (int F) {
+        return System.getProperty("user.dir")+"/Project2Dataset/F"+F+".txt";
+    }
 
+    // returns a record where F is the file number and O is the offset in the file (in bytesP)
+    private static String getRecord (int F, int O) {
+        try {
+            String fileName = getFileName(F);
+            File file = new File(fileName);
+            Scanner scanner = new Scanner(file);
+            String data = scanner.nextLine();
+            int startIndex = O;
+            int endIndex = O + 37;
+            scanner.close();
+            return data.substring(startIndex, endIndex);
+
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found");
+        }
+
+        return "";
+        
+    }
+
+    private static int getRandomV (int F, int O) {
+        try {
+            String fileName = getFileName(F);
+            File file = new File(fileName);
+            Scanner scanner = new Scanner(file);
+            String data = scanner.nextLine();
+            int startIndex = O + 33;
+            int endIndex = O + 37;
+            scanner.close();
+            return Integer.parseInt(data.substring(startIndex, endIndex));
+
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found");
+        }
+
+        return -1;
     }
 }
