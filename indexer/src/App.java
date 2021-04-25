@@ -21,7 +21,8 @@ public class App {
     // format will be F-O where F is the file # (1-99) and O is the offset # (0-3960)
 
     static Hashtable<Integer, String> tableIndex = new Hashtable<>();
-    static ArrayList<String>[] arrayIndex = new ArrayList[5000];
+    static ArrayList<String>[] arrayIndex = new ArrayList[5001];
+    static boolean indexed = false; // indicates whether or not the index tables have been created
 
     public static void main(String[] args) throws Exception {
         getInput();
@@ -34,7 +35,12 @@ public class App {
         if (command.equals("CREATE INDEX ON Project2Dataset (RandomV)")) {
             initIndexes();
             System.out.println("The hash-based and array-based indexes are built successfully.");
+        } else
+        if (command.substring(0, 46).equals("403")) {
+            int v = Integer.parseInt(command.substring(46, command.length()));
+            lookup(v);
         }
+        // scanner.close();
         getInput();
     }
 
@@ -59,15 +65,30 @@ public class App {
                         arrayIndex[k] = new ArrayList<String>();
                     }
                     arrayIndex[k].add(v);
-                    System.out.println(arrayIndex[k]);
-                    System.out.println(tableIndex);
-                    System.out.println(arrayIndex);
                 }
                 scanner.close();
+                indexed = true;
             }
         } catch (IOException e) {
             System.out.println("Invalid filename");
         }
         
+    }
+
+    // gets a value from the table
+    private static void lookup (int v) {
+        if (indexed) { // lookup from the index table
+            double time;
+            String val = tableIndex.get(v);
+            System.out.println("Record matching query: "+val);
+            System.out.println("Index type used: hashtable");
+            System.out.println("Time taken to answer query: ");
+        }
+        
+    }
+
+    // returns a record where F is the file number and O is the offset in the file (in bytesP)
+    private String getRecord (int F, int O) {
+
     }
 }
