@@ -1,4 +1,7 @@
 import java.util.Scanner;
+
+import javax.lang.model.util.ElementScanner6;
+
 import java.util.Hashtable;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -46,6 +49,10 @@ public class App {
             int v1 = Integer.parseInt(end.split(" ")[0]);
             int v2 = Integer.parseInt(end.split(" ")[4]);
             lookupRange(v1, v2);
+        } else
+        if (command.substring(0, 46).equals("SELECT * FROM Project2Dataset WHERE RandomV !=")) {
+            int v = Integer.parseInt(command.substring(46, command.length()));
+            lookupUnequal(v);
         }
         // scanner.close();
         getInput();
@@ -210,7 +217,6 @@ public class App {
                     if (randomV > v1 && randomV < v2) {
                         String queryVal = getRecord(F, O);
                         System.out.println("Record matching query: "+queryVal);
-                        break;
                     }
                 }
             }
@@ -221,5 +227,27 @@ public class App {
             System.out.println("Data files read: "+filesRead);
         }
         
+    }
+
+    // looks up for inequality
+    // no index table case here
+    private static void lookupUnequal (int v) {
+        long start = System.currentTimeMillis();
+        int filesRead = 0;
+        for (int F = 1; F <= 99; F++) {
+            filesRead++;
+            for (int O = 0; O < 4000; O+=40) {
+                int randomV = getRandomV(F, O);
+                if (randomV != v) {
+                    String queryVal = getRecord(F, O);
+                    System.out.println("Record matching query: "+queryVal);
+                }
+            }
+        }
+        long end = System.currentTimeMillis();
+        long timeElapsed = end - start;
+        System.out.println("Table scan used");
+        System.out.println("Time taken to answer query: "+timeElapsed+" ms");
+        System.out.println("Data files read: "+filesRead);
     }
 }

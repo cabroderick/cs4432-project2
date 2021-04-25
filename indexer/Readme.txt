@@ -3,6 +3,7 @@ Student id: 330551505
 
 Section I:
 To compile and execute the code:
+cd /src
 javac *.java
 java App
 
