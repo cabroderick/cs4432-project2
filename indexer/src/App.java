@@ -40,6 +40,12 @@ public class App {
         if (command.substring(0, 46).equals("SELECT * FROM Project2Dataset WHERE RandomV = ")) {
             int v = Integer.parseInt(command.substring(46, command.length()));
             lookup(v);
+        } else
+        if (command.substring(0, 46).equals("SELECT * FROM Project2Dataset WHERE RandomV > ")) {
+            String end = command.substring(46, command.length());
+            int v1 = Integer.parseInt(end.split(" ")[0]);
+            int v2 = Integer.parseInt(end.split(" ")[4]);
+            lookupRange(v1, v2);
         }
         // scanner.close();
         getInput();
@@ -164,5 +170,56 @@ public class App {
         }
 
         return -1;
+    }
+
+    // returns all queries within a given range
+    private static void lookupRange (int v1, int v2) {
+        if (indexed) { // range search in the array based index
+            ArrayList<Integer> visitedFiles = new ArrayList<>();
+            int filesRead = 0;
+            long start = System.currentTimeMillis();
+            for (int i = v1 + 1; i < v2; i++) { // search for all queries
+                if (arrayIndex[i] != null) {
+                    for (String val: arrayIndex[i]) {
+                        String[] vals = val.split("-");
+                        int F = Integer.parseInt(vals[0]);
+                        int O = Integer.parseInt(vals[1]);
+                        String queryVal = getRecord(F, O);
+                        System.out.println("Record matching query: "+queryVal);
+                        if (!visitedFiles.contains(F)) {
+                            visitedFiles.add(F);
+                            filesRead++;
+                        }
+                    }
+                }
+            }
+            long end = System.currentTimeMillis();
+
+            long timeElapsed = end - start;
+
+            System.out.println("Index type used: array-based");
+            System.out.println("Time taken to answer query: "+timeElapsed+" ms");
+            System.out.println("Data files read: "+filesRead);
+        } else { // full table 
+            long start = System.currentTimeMillis();
+            int filesRead = 0;
+            for (int F = 1; F <= 99; F++) {
+                filesRead++;
+                for (int O = 0; O < 4000; O+=40) {
+                    int randomV = getRandomV(F, O);
+                    if (randomV > v1 && randomV < v2) {
+                        String queryVal = getRecord(F, O);
+                        System.out.println("Record matching query: "+queryVal);
+                        break;
+                    }
+                }
+            }
+            long end = System.currentTimeMillis();
+            long timeElapsed = end - start;
+            System.out.println("Table scan used");
+            System.out.println("Time taken to answer query: "+timeElapsed+" ms");
+            System.out.println("Data files read: "+filesRead);
+        }
+        
     }
 }
